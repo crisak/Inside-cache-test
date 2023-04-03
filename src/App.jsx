@@ -2,52 +2,23 @@ import { useState } from 'react';
 import './App.css';
 import { Spinner } from './spinner/Spinner';
 
-const getToken = () => {
-  const myHeaders = new Headers();
-  myHeaders.append('Content-Type', 'application/json');
-
-  const raw = JSON.stringify({
-    apiKey:
-      'a0791cdf48d6ccbe69a80d0bb55aa085:3a9f181cda32f80800f616c5f9197354b71a179123cbe7b81d21ad15d93547bef8121aaa2c6646cf4f785dc0227f76d5e8752772a86bf12fac8c8d3657642cdec03deafd9a6d592b3b98d996379dfdf7',
-  });
-
-  const requestOptions = {
-    method: 'POST',
-    headers: myHeaders,
-    body: raw,
-    redirect: 'follow',
-  };
-
-  return fetch(
-    'https://sqbcgzrn17.execute-api.us-east-1.amazonaws.com/dev/token',
-    requestOptions
-  )
-    .then((response) => response.json())
-    .then((result) => result)
-    .catch((error) => Promise.reject(error));
-};
-
 const getData = async (id) => {
-  const response = await getToken();
-
-  if (!response?.data) {
-    return Promise.reject(response);
-  }
-
-  const { data: accesToken } = response;
   const myHeaders = new Headers();
-  myHeaders.append('Authorization', accesToken);
-  myHeaders.append('api-key-example-header', 'camilo');
+  myHeaders.append(
+    'Authorization',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJob3N0bmFtZSI6InFhb2xpbXBpY2Fzd2wxIiwidXNlcm5hbWUiOiJ2dGV4Lmxhc3RtaWxlIiwiaWF0IjoxNjgwNTMyMDgyLCJleHAiOjE2ODA1MzI5ODJ9.g2bVlDMea2KfXKRR4fg9vmxYO6GsAzg5fNKbhIZG_BQ'
+  );
 
   const requestOptions = {
-    method: 'GET',
+    method: 'get',
     headers: myHeaders,
     redirect: 'follow',
   };
 
+  const carrierId = '627eb3b93a19fdc0cf5fe087';
+
   return fetch(
-    'https://qwv4sr7826.execute-api.us-east-1.amazonaws.com/dev/test-users/' +
-      id,
+    `https://api.pickingnpacking.com/dev/v1/tracking/hook/${carrierId}/${id}`,
     requestOptions
   )
     .then((response) => response.json())
@@ -67,6 +38,7 @@ function App() {
   const [records, setRecords] = useState([]);
   const [listCaches, setListCaches] = useState({});
   const [loading, setLoading] = useState(false);
+  const [cacheTime, setCacheTime] = useState(60);
 
   const req = async (idParams = null) => {
     console.log('idParams', idParams);
@@ -106,7 +78,7 @@ function App() {
     }
   };
 
-  function initCounter({ data: { id, username } }, timeFetch) {
+  function initCounter({ data: { id } }, timeFetch) {
     if (
       intervalMemory[id] &&
       listCaches[id] &&
@@ -126,7 +98,7 @@ function App() {
 
         let counter =
           beforeCache.counter === undefined || beforeCache.counter == -1
-            ? 60
+            ? cacheTime
             : beforeCache.counter;
         counter = counter >= 0 ? counter - 1 : counter;
 
@@ -138,7 +110,6 @@ function App() {
             ...beforeCache,
             counter,
             state,
-            username: username,
             id,
           },
         };
@@ -155,6 +126,19 @@ function App() {
   return (
     <div className="App">
       <div className="mx mb">
+        <div className="box-inset w4 flex justify-center py-2">
+          <label htmlFor="cacheTime" className="mr">
+            Cache time
+          </label>
+          <input
+            type="number"
+            className="mb"
+            name="cacheTime"
+            id="cacheTime"
+            onChange={(e) => setCacheTime(e.target.value || 0)}
+            value={cacheTime}
+          />
+        </div>
         <div className="container-form">
           <div>
             <div className="txt-center">
@@ -224,9 +208,9 @@ function App() {
                         Request
                       </button>
                       Record{' '}
-                      <span className="color-primary">
+                      {/* <span className="color-primary">
                         {idGroup}-{values[0].response.data.username}
-                      </span>
+                      </span> */}
                     </span>
                     <span>{values.length || 0} Total</span>
                   </h5>
@@ -248,7 +232,7 @@ function App() {
                           {listCaches[idGroup].counter < 0
                             ? 0
                             : listCaches[idGroup].counter}
-                          s / 60s
+                          s / {cacheTime}s
                         </span>
                       </h6>
                       <div className="container-progress">
@@ -257,7 +241,10 @@ function App() {
                           style={{
                             width:
                               listCaches[idGroup].counter > 0
-                                ? `${(listCaches[idGroup].counter / 60) * 100}%`
+                                ? `${
+                                    (listCaches[idGroup].counter / cacheTime) *
+                                    100
+                                  }%`
                                 : '0',
                           }}
                         ></div>

@@ -6,7 +6,7 @@ const getData = async (id) => {
   const myHeaders = new Headers();
   myHeaders.append(
     'Authorization',
-    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJob3N0bmFtZSI6InFhb2xpbXBpY2Fzd2wxIiwidXNlcm5hbWUiOiJ2dGV4Lmxhc3RtaWxlIiwiaWF0IjoxNjgwNTMyMDgyLCJleHAiOjE2ODA1MzI5ODJ9.g2bVlDMea2KfXKRR4fg9vmxYO6GsAzg5fNKbhIZG_BQ'
+    'XXXX'
   );
 
   const requestOptions = {
